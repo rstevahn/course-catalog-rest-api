@@ -1,0 +1,26 @@
+{
+  "development": {
+    "dialect": "sqlite",
+    "storage": "fsjstd-restapi.db",
+    "dialectOptions": {
+      "charset": "utf8",
+      "collate": "utf8_general_ci"
+    }
+  },
+  "test": {
+    "dialect": "sqlite",
+    "storage": "fsjstd-restapi.db",
+    "dialectOptions": {
+      "charset": "utf8",
+      "collate": "utf8_general_ci"
+    }
+},
+  "production": {
+    "dialect": "sqlite",
+    "storage": "fsjstd-restapi.db",
+    "dialectOptions": {
+      "charset": "utf8",
+      "collate": "utf8_general_ci"
+    }
+  }
+}

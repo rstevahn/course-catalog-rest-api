@@ -1,8 +1,11 @@
+// jshint esversion: 9
+// jshint node: true
 'use strict';
 
 // load modules
 const express = require('express');
 const morgan = require('morgan');
+const api = require('./routes/api');
 
 // variable to enable global error logging
 const enableGlobalErrorLogging = process.env.ENABLE_GLOBAL_ERROR_LOGGING === 'true';
@@ -13,7 +16,8 @@ const app = express();
 // setup morgan which gives us http request logging
 app.use(morgan('dev'));
 
-// TODO setup your api routes here
+// the REST API
+app.use('/api', api);
 
 // setup a friendly greeting for the root route
 app.get('/', (req, res) => {
