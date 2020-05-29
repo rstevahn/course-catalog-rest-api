@@ -79,6 +79,7 @@ router.get('/users', authenticateUser, (req, res) => {
   const user = req.currentUser;
 
   res.json({
+    id: user.id,
     firstName: user.firstName,
     lastName: user.lastName,
     emailAddress: user.emailAddress
@@ -184,14 +185,14 @@ router.post('/courses', authenticateUser, [
     // try to create the user
     try {
       // get the request body
-      course = req.body;
+      const course = req.body;
 
       // set the user to the current user
-      course.user = req.currentUser.id;
-      console.log(course);
+      course.userId = req.currentUser.id;
+
       // create the course
       newCourse = await Course.create(course);
-      console.log(newCourse);
+
     } catch (error) {
       if(error.name === "SequelizeValidationError") { // checking the error
         res.status(400).json({ error: error.msg });
@@ -220,11 +221,94 @@ router.get('/courses/:id', asyncHandler(async (req, res) => {
 }));
 
 /* PUT (edit) an existing course */
-router.put('/courses/:id', asyncHandler(async (req, res) => {
-}));
+router.put('/courses/:id', authenticateUser, [
+  check('title')
+    .exists({ checkNull: true, checkFalsy: true })
+    .withMessage('Please provide a value for "title"'),
+  check('description')
+    .exists({ checkNull: true, checkFalsy: true })
+    .withMessage('Please provide a value for "description"')
+  ], asyncHandler(async (req, res) => {
+
+  // Attempt to get the validation result from the Request object.
+  const errors = validationResult(req);
+
+  // If there are validation errors...
+  if (!errors.isEmpty()) {
+    // Use the Array `map()` method to get a list of error messages.
+    const errorMessages = errors.array().map(error => error.msg);
+
+    // Return the validation errors to the client.
+    res.status(400).json({ errors: errorMessages });
+  } else {
+  
+    // try to update the course
+    try {
+      // verify the course
+      let course = await Course.findByPk(parseInt(req.params.id));
+
+      if (!course) {
+        res.status(404).json({error: "there is no existing course with that ID"});
+      }
+
+      // verify the user
+      if (course.userId != req.currentUser.id) {
+        res.status(403).json({error: "authorized user does not own this course"});
+      }
+
+      // get the request body
+      course = req.body;
+
+      // force the user to be the current user (it would be possible to provide proper authorization
+      // and then change the owner. I have chosen to prevent this. Alternatively I could check for a 
+      // valid owner and allow the change if valid.)
+
+      course.userId = req.currentUser.id;
+
+      // update the course (only update what was provided)
+      await Course.update(course, {where: {id: parseInt(req.params.id)}});
+
+    } catch (error) {
+      if(error.name === "SequelizeValidationError") { // checking the error
+        res.status(400).json({ error: error.msg });
+      } else {
+        res.status(500).json({ error: error.msg }); // error caught in the asyncHandler's catch block
+      }    
+    }
+
+    // Success! Set the status to 204 No Content and end the response.
+    return res.status(204).end();
+  }
+  
+  }));
 
 /* DELETE a course */
-router.delete('/courses/:id', asyncHandler(async (req, res) => {
-}));
+router.delete('/courses/:id', authenticateUser, asyncHandler(async (req, res) => {
+
+    // try to delete the course
+    try {
+      // verify the course
+      let course = await Course.findByPk(parseInt(req.params.id));
+
+      if (!course) {
+        res.status(404).json({error: "there is no existing course with that ID"});
+      }
+
+      // verify the user
+      if (course.userId != req.currentUser.id) {
+        res.status(403).json({error: "authorized user does not own this course"});
+      }
+
+      // delete the course
+      await Course.destroy({where: {id: parseInt(req.params.id)}});
+
+    } catch (error) {
+        res.status(500).json({ error: error.msg }); // error caught in the asyncHandler's catch block   
+    }
+
+    // Success! Set the status to 204 No Content and end the response.
+    return res.status(204).end();
+  }
+));
 
 module.exports = router;
