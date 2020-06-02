@@ -1,7 +1,10 @@
 
-# Full Stack JavaScript Techdegree v2 - REST API Project
+#  Course Catalog REST API
+## Treehouse Full Stack JavaScript Techdegree Unit 9
 
-## Extra Credit Features Included:
+This project was graded **Exceeds Expectations**.
+
+Extra Credit Features Included:
 
 * The `GET /api/users` route filters out the following attributes: `password`, `createdAt` and `updatedAt`.
 * The `GET /api/courses` and `api/courses/:id` routes filter out the following attributes: `createdAt` and `updatedAt`.
